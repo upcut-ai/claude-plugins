@@ -33,6 +33,21 @@ In Claude's plugin settings, choose **Add from a repository**, enter
 `upcut-ai/claude-plugins`, and install **upcut**. Plugins in the Claude apps
 need a paid plan.
 
+### Organizations
+
+On a Team or Enterprise plan, an owner can install Upcut for everyone:
+
+1. Open **Organization settings → Plugins**, choose **Add plugins**, pick
+   **GitHub** and enter `upcut-ai/claude-plugins`.
+2. Set Upcut to **Required** to install it for every member with no option to
+   remove it. **Installed by default** and **Available for install** leave
+   the choice to members.
+
+The organization's copy syncs when a release merges into this repository, and
+**Update** on the marketplace syncs it by hand. It reaches web chat, the Desktop
+app's chat and Cowork, but not Claude Code. Changes take effect in each member's
+next session.
+
 ### Beta
 
 Beta releases bring the next version early, for testing in Claude Code. Beta
@@ -53,14 +68,24 @@ install `upcut@upcut`.
 
 Claude Code doesn't update third-party plugins automatically unless you turn it
 on. Run `/plugin`, open **Marketplaces**, choose **upcut** (or **upcut-beta**),
-and select **Enable auto-update**. To update by hand:
+and select **Enable auto-update**. Claude Code then checks for updates within
+ten minutes of each session starting. To update by hand:
 
 ```bash
 claude plugin marketplace update upcut
 claude plugin update upcut@upcut
 ```
 
-Restart Claude Code, or run `/reload-plugins`, to load the new version.
+For beta, use `upcut-beta` and `upcut@upcut-beta` instead.
+
+Then start a new Claude Code session. `/reload-plugins` reloads the skill, but
+the connection to Upcut, which tells Upcut which version you run, reconnects
+only in a new session. In the Claude apps, update Upcut in the plugin settings
+and start a new chat.
+
+When Upcut needs a newer plugin, Claude tells you and gives these steps. A
+withdrawn release can still read your components, but it can't change them
+until you update.
 
 ## Uninstall
 
