@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - main
+      - beta
+      - internal
 
 permissions:
   contents: read
@@ -30,6 +32,8 @@ jobs:
           node-version: 24
 
       - name: Check published content
+        env:
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
         run: node .github/scripts/check-release.mjs
 
       - name: Install Claude Code
