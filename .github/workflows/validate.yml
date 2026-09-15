@@ -1,0 +1,44 @@
+name: validate
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: validate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7.0.0
+        with:
+          node-version: 24
+
+      - name: Check published content
+        run: node .github/scripts/check-release.mjs
+
+      - name: Install Claude Code
+        run: npm install --global @anthropic-ai/claude-code@2.1.236
+
+      - name: Validate the marketplace and its plugins
+        run: |
+          if [ -f .claude-plugin/marketplace.json ]; then
+            claude plugin validate --strict .
+          else
+            echo "No .claude-plugin/marketplace.json yet; nothing to validate."
+          fi
