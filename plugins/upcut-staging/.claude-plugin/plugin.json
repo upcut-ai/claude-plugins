@@ -1,0 +1,19 @@
+{
+  "name": "upcut-staging",
+  "version": "0.1.0",
+  "description": "Design components in Upcut, the browser-based CNC CAD/CAM app, from Claude.",
+  "author": {
+    "name": "upcut.ai",
+    "url": "https://upcut.ai"
+  },
+  "homepage": "https://upcut.ai",
+  "repository": "https://github.com/upcut-ai/claude-plugins",
+  "license": "MIT",
+  "keywords": [
+    "upcut",
+    "cnc",
+    "cad",
+    "cam",
+    "mcp"
+  ]
+}

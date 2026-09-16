@@ -1,0 +1,15 @@
+{
+  "name": "upcut-internal",
+  "owner": {
+    "name": "upcut.ai",
+    "url": "https://upcut.ai"
+  },
+  "description": "Upcut's plugin for Claude: a hosted connection to your Upcut workspace and the skill that teaches Claude to use it.",
+  "plugins": [
+    {
+      "name": "upcut-staging",
+      "source": "./plugins/upcut-staging",
+      "description": "Design components in Upcut, the browser-based CNC CAD/CAM app, from Claude."
+    }
+  ]
+}
