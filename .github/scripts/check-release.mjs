@@ -23,6 +23,10 @@ const PUBLISHER = 'upcut-plugin-publisher[bot]'
 // header that changed every release would sign everyone out on every update.
 const GENERATION_HEADER = 'x-upcut-plugin-generation'
 const GENERATION = /^[1-9]\d{0,3}$/
+// The internal channel's host is protected, so its plugin sends one more header. It may only
+// name an environment variable, which the client expands: a value here would be a credential
+// published to this repository, which is public.
+const PLACEHOLDER = /^\$\{[A-Z][A-Z0-9_]{2,63}\}$/
 
 const git = (...args) => execFileSync('git', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
 const failures = []
@@ -72,8 +76,13 @@ for (const name of plugins) {
       const where = `plugins/${name}/.mcp.json ${key}`
       if (server.url !== channel.endpoint) failures.push(`${where}: the ${branch} channel connects to ${channel.endpoint}, not ${server.url}`)
       const headers = server.headers ?? {}
-      if (Object.keys(headers).some(header => header.toLowerCase() !== GENERATION_HEADER) || !GENERATION.test(headers[GENERATION_HEADER] ?? '')) failures.push(`${where}: must send only ${GENERATION_HEADER}, a whole number from 1 to 9999`)
+      if (!GENERATION.test(headers[GENERATION_HEADER] ?? '')) failures.push(`${where}: must send ${GENERATION_HEADER}, a whole number from 1 to 9999`)
       else generation = Number(headers[GENERATION_HEADER])
+      for (const [header, value] of Object.entries(headers)) {
+        if (header.toLowerCase() === GENERATION_HEADER) continue
+        if (!channel.staging) failures.push(`${where}: the ${branch} channel sends ${GENERATION_HEADER} and nothing else, not ${header}`)
+        else if (!PLACEHOLDER.test(value)) failures.push(`${where}: ${header} must name an environment variable, such as \${UPCUT_STAGING_BYPASS}, not carry its value`)
+      }
       if (server.oauth && ('clientSecret' in server.oauth || 'client_secret' in server.oauth)) failures.push(`${where}: carries an OAuth client secret`)
     }
   }

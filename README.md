@@ -99,7 +99,8 @@ Then disable the agent in Upcut → Settings → Agents.
 
 Each release channel is a branch. `main` is the stable `upcut` marketplace and
 `beta` is `upcut-beta`. `internal` carries a build for Upcut's own staging
-servers and isn't for customers.
+servers and isn't for customers: those servers are protected, so that build only
+works for people who set `UPCUT_STAGING_BYPASS` in their environment.
 
 Upcut's release pipeline generates everything under `.claude-plugin/` and
 `plugins/`. Changes arrive only as reviewed pull requests from that pipeline, so
