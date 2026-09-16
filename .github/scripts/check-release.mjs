@@ -18,7 +18,11 @@ const CHANNELS = {
 }
 // Published content arrives only in pull requests the release pipeline opens.
 const PUBLISHER = 'upcut-plugin-publisher[bot]'
-const VERSION_HEADER = 'x-upcut-plugin-version'
+// The only header a plugin sends: its generation, which rises only to withdraw releases. It is
+// not the version because Claude Code keys a server's sign-in by its URL and headers, so a
+// header that changed every release would sign everyone out on every update.
+const GENERATION_HEADER = 'x-upcut-plugin-generation'
+const GENERATION = /^[1-9]\d{0,3}$/
 
 const git = (...args) => execFileSync('git', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
 const failures = []
@@ -60,6 +64,7 @@ for (const name of plugins) {
   const prerelease = version.includes('-')
   if (channel?.prerelease === 'forbidden' && prerelease) failures.push(`${manifest}: the ${branch} channel publishes release versions only, not ${version}`)
   if (channel?.prerelease === 'required' && !prerelease) failures.push(`${manifest}: the ${branch} channel needs a pre-release version, so it never shares one with main; found ${version}`)
+  let generation = null
   if (channel) {
     const servers = Object.entries(readJson(join('plugins', name, '.mcp.json'))?.mcpServers ?? {})
     if (!servers.length) failures.push(`plugins/${name}/.mcp.json: declares no MCP server`)
@@ -67,7 +72,8 @@ for (const name of plugins) {
       const where = `plugins/${name}/.mcp.json ${key}`
       if (server.url !== channel.endpoint) failures.push(`${where}: the ${branch} channel connects to ${channel.endpoint}, not ${server.url}`)
       const headers = server.headers ?? {}
-      if (Object.keys(headers).some(header => header.toLowerCase() !== VERSION_HEADER) || headers[VERSION_HEADER] !== version) failures.push(`${where}: must send only ${VERSION_HEADER}: ${version}`)
+      if (Object.keys(headers).some(header => header.toLowerCase() !== GENERATION_HEADER) || !GENERATION.test(headers[GENERATION_HEADER] ?? '')) failures.push(`${where}: must send only ${GENERATION_HEADER}, a whole number from 1 to 9999`)
+      else generation = Number(headers[GENERATION_HEADER])
       if (server.oauth && ('clientSecret' in server.oauth || 'client_secret' in server.oauth)) failures.push(`${where}: carries an OAuth client secret`)
     }
   }
@@ -79,6 +85,9 @@ for (const name of plugins) {
     try { previous = JSON.parse(git('show', `origin/${base}:${manifest}`)).version } catch { /* a new plugin has no previous version */ }
     if (previous === version) failures.push(`${name}: content changed but version is still ${version}`)
     else if (previous && SEMVER.test(previous) && compareVersions(version, previous) < 0) failures.push(`${name}: ${version} would move the ${branch} channel back from ${previous}; roll forward with a higher version`)
+    let before = null
+    try { before = Number(Object.values(JSON.parse(git('show', `origin/${base}:plugins/${name}/.mcp.json`)).mcpServers ?? {})[0]?.headers?.[GENERATION_HEADER]) || null } catch { /* nothing published yet */ }
+    if (before && generation && generation < before) failures.push(`${name}: the plugin generation would go down from ${before} to ${generation}; it only rises, to withdraw releases`)
   }
 }
 
