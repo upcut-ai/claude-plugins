@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "upcut": {
+      "type": "http",
+      "url": "https://staging.upcut.ai/api/agent/mcp",
+      "headers": {
+        "x-upcut-plugin-generation": "1"
+      },
+      "oauth": {
+        "clientId": "upcut-claude-code"
+      }
+    }
+  }
+}
