@@ -9,7 +9,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { SEMVER, compareVersions } from './versions.mjs'
 
-const PRODUCTION = 'https://upcut.ai/api/agent/mcp'
+const PRODUCTION = 'https://app.upcut.ai/api/agent/mcp'
 const CHANNELS = {
   main: { marketplace: 'upcut', plugin: 'upcut', endpoint: PRODUCTION, prerelease: 'forbidden' },
   beta: { marketplace: 'upcut-beta', plugin: 'upcut', endpoint: PRODUCTION, prerelease: 'required' },
